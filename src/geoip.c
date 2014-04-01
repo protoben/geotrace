@@ -23,7 +23,10 @@ db_t *ipdata_dbinit()
   else /* AS db requested. */
   {
     if(!opts.asdb) /* No db name specified. */
-      opts.asdb = ASDB_DEFAULT;
+    {
+      if(opts.flags & IPV6) opts.asdb = ASDB_V6_DEFAULT;
+      else opts.asdb = ASDB_V4_DEFAULT;
+    }
 
     dbp->asgp = GeoIP_open(opts.asdb, GEOIP_INDEX_CACHE);
     if(!dbp->asgp)
@@ -35,7 +38,10 @@ db_t *ipdata_dbinit()
   else /* City db requested. */
   {
     if(!opts.citydb) /* No db name specified. */
-      opts.citydb = CITYDB_DEFAULT;
+    {
+      if(opts.flags & IPV6) opts.citydb = CITYDB_V6_DEFAULT;
+      else opts.citydb = CITYDB_V4_DEFAULT;
+    }
 
     dbp->citygp = GeoIP_open(opts.citydb, GEOIP_INDEX_CACHE);
     if(!dbp->citygp)
@@ -68,7 +74,12 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
 
   /* Query the city database, if we have it. */
   if(dbp->citygp)
-    if((grp = GeoIP_record_by_name(dbp->citygp, inaddr)))
+  {
+    if(opts.flags & IPV6)
+      grp = GeoIP_record_by_name_v6(dbp->citygp, inaddr);
+    else grp = GeoIP_record_by_name(dbp->citygp, inaddr);
+
+    if(grp)
     {
       if(grp->city) city = grp->city;
       if(grp->region) region = grp->region;
@@ -76,11 +87,16 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
       ip->latitude = grp->latitude;
       ip->longitude = grp->longitude;
     }
+  }
 
   /* Query the asnum database, if we have it. */
   if(dbp->asgp)
-    if(!(asnum = GeoIP_org_by_name(dbp->asgp, inaddr)))
-      asnum = empty;
+  {
+    if(opts.flags & IPV6)
+      asnum = GeoIP_org_by_name_v6(dbp->asgp, inaddr);
+    else asnum = GeoIP_org_by_name(dbp->asgp, inaddr);
+    if(!asnum) asnum = empty;
+  }
 
   /* Copy data into ipdata_t for great thread safety. */
   ip->address = MALLOC(strlen(inaddr) + 1, "ipdata_lookup()");

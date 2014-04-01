@@ -18,8 +18,11 @@
 #include <GeoIPCity.h>
 #include <string.h>
 
-#define CITYDB_DEFAULT "/usr/share/GeoIP/GeoIPCity.dat"
-#define ASDB_DEFAULT "/usr/share/GeoIP/GeoIPASNum.dat"
+#define DBDIR "/usr/share/GeoIP/"
+#define CITYDB_V4_DEFAULT DBDIR "GeoLiteCity.dat"
+#define CITYDB_V6_DEFAULT DBDIR "GeoLiteCityv6.dat"
+#define ASDB_V4_DEFAULT DBDIR "GeoIPASNum.dat"
+#define ASDB_V6_DEFAULT DBDIR "GeoIPASNumv6.dat"
 
 typedef struct _ipdata_st
 {
