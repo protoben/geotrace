@@ -17,8 +17,8 @@
 #include <GeoIP.h>
 #include <GeoIPCity.h>
 
-#define CITYDB_DEFAULT "/usr/share/GeoIPCity.dat"
-#define ASDB_DEFAULT "/usr/share/GeoIPASNum.dat"
+#define CITYDB_DEFAULT "/usr/share/GeoIP/GeoIPCity.dat"
+#define ASDB_DEFAULT "/usr/share/GeoIP/GeoIPASNum.dat"
 
 typedef struct _ipdata_st
 {
