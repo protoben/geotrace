@@ -11,6 +11,9 @@
  *
  */
 
+#ifndef _IPTRAIL_H
+#define _IPTRAIL_H
+
 #ifndef DEBUG
 # define NDEBUG
 #endif
@@ -28,3 +31,5 @@ extern struct _opts_st opts;
 #define OPTS "h"
 #define USAGE "%s %s\nUsage: %s -%s\n\t-h) Print this message.\n", NAME, VERS, NAME, OPTS
 #define DIE(msg) do{fprintf(stderr, msg); exit(EXIT_FAILURE);}while(0)
+
+#endif
