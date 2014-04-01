@@ -26,6 +26,8 @@ db_t *ipdata_dbinit()
       opts.asdb = ASDB_DEFAULT;
 
     dbp->asgp = GeoIP_open(opts.asdb, GEOIP_INDEX_CACHE);
+    if(!dbp->asgp)
+      fputs("ASNum DB requested but not found! Proceeding without it.\n", stderr);
   }
 
   if(opts.flags & NOCITY) /* City db not requested. */
@@ -36,6 +38,8 @@ db_t *ipdata_dbinit()
       opts.citydb = CITYDB_DEFAULT;
 
     dbp->citygp = GeoIP_open(opts.citydb, GEOIP_INDEX_CACHE);
+    if(!dbp->citygp)
+      fputs("City DB requested but not found! Proceeding without it.\n", stderr);
   }
 
   return dbp;
@@ -60,6 +64,8 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
 
   if(!inaddr) return NULL;
 
+  ip = MALLOC(sizeof(ipdata_t), "ipdata_lookup()");
+
   /* Query the city database, if we have it. */
   if(dbp->citygp)
     if((grp = GeoIP_record_by_name(dbp->citygp, inaddr)))
@@ -75,8 +81,6 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
   if(dbp->asgp)
     if(!(asnum = GeoIP_org_by_name(dbp->asgp, inaddr)))
       asnum = empty;
-
-  ip = MALLOC(sizeof(ipdata_t), "ipdata_lookup()");
 
   /* Copy data into ipdata_t for great thread safety. */
   ip->address = MALLOC(strlen(inaddr) + 1, "ipdata_lookup()");
@@ -96,11 +100,13 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
 
 void ipdata_print_pretty(ipdata_t *ip)
 {
-  printf("%s\n\t%s, %s, %s\n\t(%f, %f)\n\t%s\n",
-         ip->address,
-         ip->city, ip->region, ip->country,
-         ip->latitude, ip->longitude,
-         ip->asnum);
+  printf("%s\n", ip->address);
+  if(!(opts.flags & NOCITY))
+    printf("\t%s, %s, %s\n\t(%f, %f)\n",
+           ip->city, ip->region, ip->country,
+           ip->latitude, ip->longitude);
+  if(!(opts.flags & NOAS))
+    printf("\t%s\n", ip->asnum);
 }
 
 void ipdata_free(ipdata_t *ip)

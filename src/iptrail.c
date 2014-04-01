@@ -67,10 +67,6 @@ int main(int argc, char **argv)
   host = argparse(argc, argv);
   
   dbp = ipdata_dbinit();
-  if(!dbp->asgp && !(opts.flags & NOAS))
-    fputs("ASNum DB requested but not found! Proceeding without it.\n", stderr);
-  if(!dbp->citygp && !(opts.flags & NOCITY))
-    fputs("City DB requested but not found! Proceeding without it.\n", stderr);
 
   ip = ipdata_lookup(host, dbp);
 
