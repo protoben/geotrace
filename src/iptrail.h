@@ -14,6 +14,9 @@
 #ifndef _IPTRAIL_H
 #define _IPTRAIL_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #ifndef DEBUG
 # define NDEBUG
 #endif

@@ -11,9 +11,6 @@
  *
  */
 
-#include <getopt.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include "iptrail.h"
 
 void argparse(int argc, char **argv)
