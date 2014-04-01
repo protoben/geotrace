@@ -16,11 +16,11 @@
 
 struct _opts_st opts;
 
-void argparse(int argc, char **argv)
+char *argparse(int argc, char **argv)
 {
   char opt;
 
-  //if(argc < 2) DIE(USAGE);
+  if(argc < 2) DIE(USAGE);
 
   while((opt = getopt(argc, argv, OPTS)) != -1)
   {
@@ -54,13 +54,17 @@ void argparse(int argc, char **argv)
         break;
     }
   }
+
+  return argv[optind];
 }
 
 int main(int argc, char **argv)
 {
   db_t *dbp = NULL;
+  ipdata_t *ip = NULL;
+  char *host;
   
-  argparse(argc, argv);
+  host = argparse(argc, argv);
   
   dbp = ipdata_dbinit();
   if(!dbp->asgp && !(opts.flags & NOAS))
@@ -68,8 +72,11 @@ int main(int argc, char **argv)
   if(!dbp->citygp && !(opts.flags & NOCITY))
     fputs("City DB requested but not found! Proceeding without it.\n", stderr);
 
-  printf("%s %d %lx\n%s %d %lx\n", opts.asdb, opts.flags & NOAS, dbp->asgp, opts.citydb, opts.flags & NOCITY, dbp->citygp);
+  ip = ipdata_lookup(host, dbp);
 
+  ipdata_print_pretty(ip);
+
+  ipdata_free(ip);
   ipdata_dbfree(dbp);
   return EXIT_SUCCESS;
 }

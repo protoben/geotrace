@@ -16,6 +16,7 @@
 
 #include <GeoIP.h>
 #include <GeoIPCity.h>
+#include <string.h>
 
 #define CITYDB_DEFAULT "/usr/share/GeoIP/GeoIPCity.dat"
 #define ASDB_DEFAULT "/usr/share/GeoIP/GeoIPASNum.dat"
@@ -26,7 +27,6 @@ typedef struct _ipdata_st
   char *city;
   char *region;
   char *country;
-  char *timezone;
   double latitude;
   double longitude;
   char *asnum;
@@ -39,10 +39,15 @@ typedef struct _db_st
 } db_t;
 
 /* External interface */
+
+/* Database functions. */
 db_t *ipdata_dbinit();
 void ipdata_dbfree(db_t *dbp);
+
+/* IP data functions. */
 ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp);
 ipdata_t *ipdata_lookup6(const char *inaddr, db_t *dbp);
+void ipdata_print_pretty(ipdata_t *ip);
 void ipdata_free(ipdata_t *ip);
 
 #endif
