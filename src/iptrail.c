@@ -13,6 +13,8 @@
 
 #include "iptrail.h"
 
+struct _opts_st opts;
+
 void argparse(int argc, char **argv)
 {
   char opt;
@@ -23,6 +25,9 @@ void argparse(int argc, char **argv)
   {
     switch(opt)
     {
+      case 'n':
+        opts.flags |= NORESOLV;
+        break;
       case 'h':
       default:
         DIE(USAGE);
