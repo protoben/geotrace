@@ -42,6 +42,10 @@ extern struct _opts_st opts;
 
 #define OPTS "n6ACa:c:h"
 #define USAGE "%s %s\nUsage: %s -%s\n\t-h) Print this message.\n", NAME, VERS, NAME, OPTS
-#define DIE(msg) do{fprintf(stderr, msg); exit(EXIT_FAILURE);}while(0)
+#define DIE(msg) \
+  do{fprintf(stderr, msg); \
+  fprintf(stderr, "%s:%d\n", __FILE__, __LINE__); \
+  exit(EXIT_FAILURE);      \
+  }while(0)
 
 #endif

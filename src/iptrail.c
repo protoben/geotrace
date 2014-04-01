@@ -20,7 +20,7 @@ void argparse(int argc, char **argv)
 {
   char opt;
 
-  if(argc < 2) DIE(USAGE);
+  //if(argc < 2) DIE(USAGE);
 
   while((opt = getopt(argc, argv, OPTS)) != -1)
   {
@@ -41,12 +41,12 @@ void argparse(int argc, char **argv)
       case 'a':
         if(opts.flags & NOAS)
           DIE("argparse(): Only one of -a and -A may be specified\n");
-        opts.citydb = optarg;
+        opts.asdb = optarg;
         break;
       case 'c':
         if(opts.flags & NOCITY)
           DIE("argparse(): Only one of -c and -C may be specified\n");
-        opts.asdb = optarg;
+        opts.citydb = optarg;
         break;
       case 'h':
       default:
@@ -58,7 +58,17 @@ void argparse(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-  db_t *dbp = ipdata_dbinit();
+  db_t *dbp = NULL;
+  
+  argparse(argc, argv);
+  
+  dbp = ipdata_dbinit();
+  if(!dbp->asgp && !(opts.flags & NOAS))
+    fputs("ASNum DB requested but not found! Proceeding without it.\n", stderr);
+  if(!dbp->citygp && !(opts.flags & NOCITY))
+    fputs("City DB requested but not found! Proceeding without it.\n", stderr);
+
+  printf("%s %d %lx\n%s %d %lx\n", opts.asdb, opts.flags & NOAS, dbp->asgp, opts.citydb, opts.flags & NOCITY, dbp->citygp);
 
   ipdata_dbfree(dbp);
   return EXIT_SUCCESS;
