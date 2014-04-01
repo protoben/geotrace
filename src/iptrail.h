@@ -29,6 +29,9 @@
 
 /* Option flags */
 #define NORESOLV 0x01
+#define IPV6     0x02
+#define NOAS     0x04
+#define NOCITY   0x08
 struct _opts_st
 {
   unsigned flags;
@@ -37,7 +40,7 @@ struct _opts_st
 };
 extern struct _opts_st opts;
 
-#define OPTS "nh"
+#define OPTS "n6ACa:c:h"
 #define USAGE "%s %s\nUsage: %s -%s\n\t-h) Print this message.\n", NAME, VERS, NAME, OPTS
 #define DIE(msg) do{fprintf(stderr, msg); exit(EXIT_FAILURE);}while(0)
 
