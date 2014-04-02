@@ -1,6 +1,6 @@
 NAME=iptrail
 CC=gcc
-CCFLAGS=-g -Wall -lGeoIP
+CCFLAGS=-g -Wall -lGeoIP -DDEBUG
 
 OBJS=iptrail.o geoip.o
 SRC=src
