@@ -24,7 +24,7 @@ db_t *ipdata_dbinit()
   {
     if(!opts.asdb) /* No db name specified. */
     {
-      if(opts.flags & IPV6) opts.asdb = ASDB_V6_DEFAULT;
+      if(opts.family == AF_INET6) opts.asdb = ASDB_V6_DEFAULT;
       else opts.asdb = ASDB_V4_DEFAULT;
     }
 
@@ -43,7 +43,7 @@ db_t *ipdata_dbinit()
   {
     if(!opts.citydb) /* No db name specified. */
     {
-      if(opts.flags & IPV6) opts.citydb = CITYDB_V6_DEFAULT;
+      if(opts.family == AF_INET6) opts.citydb = CITYDB_V6_DEFAULT;
       else opts.citydb = CITYDB_V4_DEFAULT;
     }
 
@@ -83,7 +83,7 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
   /* Query the city database, if we have it. */
   if(dbp->citygp)
   {
-    if(opts.flags & IPV6)
+    if(opts.family == AF_INET6)
       grp = GeoIP_record_by_name_v6(dbp->citygp, inaddr);
     else grp = GeoIP_record_by_name(dbp->citygp, inaddr);
 
@@ -100,7 +100,7 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
   /* Query the asnum database, if we have it. */
   if(dbp->asgp)
   {
-    if(opts.flags & IPV6)
+    if(opts.family == AF_INET6)
       asnum = GeoIP_org_by_name_v6(dbp->asgp, inaddr);
     else asnum = GeoIP_org_by_name(dbp->asgp, inaddr);
     if(!asnum) asnum = empty;
@@ -122,13 +122,35 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
   return ip;
 }
 
+void ipdata_print_long(ipdata_t *ip)
+{
+}
+
 void ipdata_print_pretty(ipdata_t *ip)
 {
-  printf("%s (%d)\n", ip->address, (opts.flags & IPV6) ? 6 : 4);
+  char host[50] = "X";
+  struct sockaddr sa = {.sa_family = opts.family};
+  if(opts.family == AF_INET)
+    inet_pton(AF_INET, ip->address, &(((struct sockaddr_in*)&sa)->sin_addr));
+  else
+    inet_pton(AF_INET6, ip->address, &(((struct sockaddr_in6*)&sa)->sin6_addr));
+
+  if(opts.flags & NORESOLV) puts(ip->address);
+  else
+  {
+    getnameinfo(&sa, sizeof(struct sockaddr_in6),
+                host, sizeof host, NULL, 0,
+                NI_NAMEREQD);
+    printf("%s (%s)\n", ip->address, host);
+  }
+
+  /* Print city info. */
   if(!(opts.flags & NOCITY))
     printf("\t%s, %s, %s\n\t(%f, %f)\n",
            ip->city, ip->region, ip->country,
            ip->latitude, ip->longitude);
+
+  /* Print as info. */
   if(!(opts.flags & NOAS))
     printf("\t%s\n", ip->asnum);
 }

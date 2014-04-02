@@ -16,6 +16,7 @@
 
 #include <GeoIP.h>
 #include <GeoIPCity.h>
+#include <netdb.h>
 #include <string.h>
 
 #define DBDIR "/usr/share/GeoIP/"

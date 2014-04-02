@@ -29,27 +29,23 @@ char *getaddrtype(char *target)
   if(opts.flags & NORESOLV) hints.ai_flags |= AI_NUMERICHOST;
 
   /* Prefill hints to specify address family if necessary. */
-  if(opts.flags & IPV4) hints.ai_family = AF_INET;
-  if(opts.flags & IPV6) hints.ai_family = AF_INET6;
+  hints.ai_family = opts.family;
 
   if((err = getaddrinfo(target, NULL, &hints, &aip)))
     DIE("getaddrtype(): %s\n", gai_strerror(err));
 
   if(aip->ai_addr->sa_family == AF_INET)
   { /* We found an IPv4 address. */
-    opts.flags |= IPV4;
+    opts.family = AF_INET;
     sin = (struct sockaddr_in*)aip->ai_addr;
     inet_ntop(AF_INET, &(sin->sin_addr.s_addr),
               addr, sizeof addr);
   } else { /* We found an IPv6 address. */
-    opts.flags |= IPV6;
+    opts.family = AF_INET6;
     sin6 = (struct sockaddr_in6*)aip->ai_addr;
     inet_ntop(AF_INET6, &(sin6->sin6_addr.s6_addr),
               addr, sizeof addr);
   }
-
-  if((opts.flags & IPV4) && (opts.flags & IPV6))
-    DIE("Only one of -4 and -6 may be specified.");
 
   freeaddrinfo(aip);
   return addr;
@@ -68,8 +64,15 @@ char *argparse(int argc, char **argv)
       case 'n':
         opts.flags |= NORESOLV;
         break;
+      case '4':
+        if(opts.family == AF_INET6)
+          DIE("argparse(): Only one of -4/-6 may be specified");
+        opts.family = AF_INET;
+        break;
       case '6':
-        opts.flags |= IPV6;
+        if(opts.family == AF_INET)
+          DIE("argparse(): Only one of -4/-6 may be specified");
+        opts.family = AF_INET6;
         break;
       case 'A':
         opts.flags |= NOAS;

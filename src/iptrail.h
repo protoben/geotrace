@@ -32,19 +32,18 @@
 
 /* Option flags */
 #define NORESOLV 0x01
-#define IPV4     0x02
-#define IPV6     0x04
-#define NOAS     0x08
-#define NOCITY   0x10
+#define NOAS     0x02
+#define NOCITY   0x14
 struct _opts_st
 {
   unsigned flags;
   char *citydb;
   char *asdb;
+  int family;
 };
 extern struct _opts_st opts;
 
-#define OPTS "n6ACa:c:h"
+#define OPTS "n46ACa:c:h"
 #define USAGE "%s %s\nUsage: %s -%s\n\t-h) Print this message.\n", NAME, VERS, NAME, OPTS
 #define DIE(...) do{fprintf(stderr, __VA_ARGS__); exit(EXIT_FAILURE);}while(0)
 
