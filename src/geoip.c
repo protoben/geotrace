@@ -124,6 +124,33 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
 
 void ipdata_print_long(ipdata_t *ip)
 {
+  char host[50] = "X";
+  struct sockaddr sa = {.sa_family = opts.family};
+  if(opts.family == AF_INET)
+    inet_pton(AF_INET, ip->address, &(((struct sockaddr_in*)&sa)->sin_addr));
+  else
+    inet_pton(AF_INET6, ip->address, &(((struct sockaddr_in6*)&sa)->sin6_addr));
+
+  if(opts.flags & NORESOLV) fputs(ip->address, stdout);
+  else
+  {
+    getnameinfo(&sa, sizeof(struct sockaddr_in6),
+                host, sizeof host, NULL, 0,
+                NI_NAMEREQD);
+    printf("%s (%s)", ip->address, host);
+  }
+
+  /* Print city info. */
+  if(!(opts.flags & NOCITY))
+    printf("\t|\t%s, %s, %s (%f, %f)",
+           ip->city, ip->region, ip->country,
+           ip->latitude, ip->longitude);
+
+  /* Print as info. */
+  if(!(opts.flags & NOAS))
+    printf("\t|\t%s", ip->asnum);
+
+  puts("");
 }
 
 void ipdata_print_pretty(ipdata_t *ip)

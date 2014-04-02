@@ -52,6 +52,7 @@ void ipdata_dbfree(db_t *dbp);
 ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp);
 ipdata_t *ipdata_lookup6(const char *inaddr, db_t *dbp);
 void ipdata_print_pretty(ipdata_t *ip);
+void ipdata_print_long(ipdata_t *ip);
 void ipdata_free(ipdata_t *ip);
 
 #endif
