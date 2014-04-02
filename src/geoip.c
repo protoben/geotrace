@@ -30,7 +30,11 @@ db_t *ipdata_dbinit()
 
     dbp->asgp = GeoIP_open(opts.asdb, GEOIP_INDEX_CACHE);
     if(!dbp->asgp)
-      fputs("ASNum DB requested but not found! Proceeding without it.\n", stderr);
+    {
+      fputs("ASNum DB requested but not found! "
+            "Proceeding without it.\n", stderr);
+      opts.flags |= NOAS;
+    }
   }
 
   if(opts.flags & NOCITY) /* City db not requested. */
@@ -45,7 +49,11 @@ db_t *ipdata_dbinit()
 
     dbp->citygp = GeoIP_open(opts.citydb, GEOIP_INDEX_CACHE);
     if(!dbp->citygp)
-      fputs("City DB requested but not found! Proceeding without it.\n", stderr);
+    {
+      fputs("City DB requested but not found! "
+            "Proceeding without it.\n", stderr);
+      opts.flags |= NOCITY;
+    }
   }
 
   return dbp;
