@@ -116,7 +116,8 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
 
 void ipdata_print_pretty(ipdata_t *ip)
 {
-  printf("%s\n", ip->address);
+  assert(!(opts.flags & IPV6 && opts.flags & IPV4));
+  printf("%s (%d)\n", ip->address, (opts.flags & IPV6) ? 6 : 4);
   if(!(opts.flags & NOCITY))
     printf("\t%s, %s, %s\n\t(%f, %f)\n",
            ip->city, ip->region, ip->country,

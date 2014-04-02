@@ -16,6 +16,7 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,9 +32,10 @@
 
 /* Option flags */
 #define NORESOLV 0x01
-#define IPV6     0x02
-#define NOAS     0x04
-#define NOCITY   0x08
+#define IPV4     0x02
+#define IPV6     0x04
+#define NOAS     0x08
+#define NOCITY   0x10
 struct _opts_st
 {
   unsigned flags;
