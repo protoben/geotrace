@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 
   ip = ipdata_lookup(host, dbp);
 
-  ipdata_print_long(ip);
+  ipdata_print_pretty(ip);
 
   ipdata_free(ip);
   ipdata_dbfree(dbp);

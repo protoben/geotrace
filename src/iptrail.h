@@ -39,7 +39,7 @@ struct _opts_st
   unsigned flags;
   char *citydb;
   char *asdb;
-  int family;
+  sa_family_t family;
 };
 extern struct _opts_st opts;
 
