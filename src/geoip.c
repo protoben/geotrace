@@ -118,6 +118,7 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
   ip->asnum = MALLOC(strlen(asnum) + 1, "ipdata_lookup()");
   strcpy(ip->asnum, asnum);
 
+  free(asnum);
   if(grp) GeoIPRecord_delete(grp);
   return ip;
 }
