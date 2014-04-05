@@ -13,16 +13,22 @@
 
 #include "trace.h"
 
+/*
+ * Fill a sockaddr with info about our target (address, port,
+ * address family);
+ */
 int init_target_sock(char *addr, struct sockaddr_storage *ssp)
 {
   int err;
   struct addrinfo *aip, hints;
+  char port[6];
 
   /* Prefill hints and call getaddrinfo for a target sockaddr. */
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = opts.family;
   hints.ai_flags = AI_ADDRCONFIG;
-  if((err = getaddrinfo(addr, "http", &hints, &aip)))
+  snprintf(port, sizeof(port), "%d", opts.port);
+  if((err = getaddrinfo(addr, port, &hints, &aip)))
     DIE("getaddrinfo(): %s\n", gai_strerror(err));
 
   /* Copy the target sockaddr into our rteurn value. */
@@ -102,12 +108,14 @@ trace_t *trace_init(char *addr)
   struct sockaddr_in *sinp;
   struct sockaddr_in6 *sin6p;
 
+  srand(time(NULL));
+
   /* Attempt to get raw socket capabilities (for icmp). */
   err = trace_get_cap(CAP_NET_RAW);
   if(err) DIE("trace_get_cap(): %s\n", strerror(err));
 
   /* Attempt to acquire sending and recving socks. */
-  err = trace_get_socks(&recv_sock, &send_sock, IPPROTO_UDP);
+  err = trace_get_socks(&recv_sock, &send_sock, opts.proto);
   if(err) DIE("trace_get_socks(): socket(): %s\n", strerror(err));
 
   /* Create a trace_t to return and copy in our socks. */
@@ -131,6 +139,10 @@ trace_t *trace_init(char *addr)
   return ret;
 }
 
+/*
+ * Send a burst of udp probes with the specified ttl. Return
+ * an error code on failure.
+ */
 int send_trace_udp(int sock, struct sockaddr* targetp, int ttl)
 {
   int err, i;
@@ -197,6 +209,10 @@ int trace_gethop(trace_t *tracep, hop_t *hop, int ttl)
   struct sockaddr *replyp = (struct sockaddr*)&reply,
                   *targetp = (struct sockaddr*)&tracep->target_ss;
   struct timeval sendtime, recvtime;
+
+  /* Pick an ephemeral port (rfc6335) if port isn't static */
+  if(!(opts.flags & STATICPORT))
+    *tracep->portp = (rand() % 16383) + 49152;
 
   /* Send the trace for this ttl. */
   err = send_trace_udp(tracep->send_sock, targetp, ttl);
