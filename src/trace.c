@@ -152,11 +152,11 @@ int send_trace_udp(int sock, struct sockaddr* targetp, int ttl)
                       sizeof(struct sockaddr_in);
   memset(buf, 0, sizeof(buf));
 
-  /* Set ttl on outgoing packet. */
+  /* Set ttl on outgoing packets. */
   err = setsockopt(sock, IPPROTO_IP, IP_TTL, &ttl, sizeof(int));
   if(err) return errno;
 
-  /* Deploy the probe. */
+  /* Deploy probes in a burst. */
   for(i = 0; i < opts.burst; ++i)
   {
     err = sendto(sock, buf, sizeof(buf), 0, targetp, addrlen);
@@ -169,7 +169,7 @@ int send_trace_udp(int sock, struct sockaddr* targetp, int ttl)
 int recv_reply_icmp(int sock, struct sockaddr *ssp)
 {
   char buf[512];
-  int err;
+  int err, i;
   fd_set fds;
   struct timeval timeout = {.tv_sec = 1, .tv_usec = 0};
   struct sockaddr *replyp = (struct sockaddr*)ssp;
@@ -188,9 +188,21 @@ int recv_reply_icmp(int sock, struct sockaddr *ssp)
   err = recvfrom(sock, buf, sizeof(buf), 0, replyp, &addrlen);
   if(err < 0) return errno;
 
+  /* Wait until timeout for the rest of our burst. */
+  for(err = 0, i = 0; i < opts.burst && err >= 0; ++i)
+  {
+    err = select(sock + 1, &fds, NULL, NULL, &timeout);
+    if(err > 0)
+      recvfrom(sock, buf, sizeof(buf), 0, replyp, &addrlen);
+  }
+
   return 0;
 }
 
+/*
+ * Return the difference in seconds between two timeval
+ * structs as a double.
+ */
 double diff_time(struct timeval *startp, struct timeval *endp)
 {
   double ret;
@@ -201,6 +213,10 @@ double diff_time(struct timeval *startp, struct timeval *endp)
   return ret;
 }
 
+/*
+ * Get the address of hop #ttl. Set is_last_hop if it
+ * matches our destination. Also calculate the minimum rtt.
+ */
 int trace_gethop(trace_t *tracep, hop_t *hop, int ttl)
 {
   void *addrp;
@@ -247,6 +263,9 @@ int trace_gethop(trace_t *tracep, hop_t *hop, int ttl)
   return 0;
 }
 
+/*
+ * Does what it says on the tin.
+ */
 void trace_free(trace_t *tracep)
 {
   close(tracep->send_sock);

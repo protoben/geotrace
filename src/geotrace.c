@@ -59,7 +59,7 @@ char *argparse(int argc, char **argv)
 
   /* Defaults */
   opts.proto = IPPROTO_UDP;
-  opts.burst = 1;
+  opts.burst = 5;
   opts.to.tv_sec = 1;
   opts.first = 1;
   opts.max = 30;
