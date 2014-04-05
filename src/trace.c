@@ -21,9 +21,8 @@ int init_target_sock(char *addr, struct sockaddr_storage *ssp)
   /* Prefill hints and call getaddrinfo for a target sockaddr. */
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = opts.family;
-  hints.ai_socktype = SOCK_DGRAM;
   hints.ai_flags = AI_ADDRCONFIG;
-  if((err = getaddrinfo(addr, "domain", &hints, &aip)))
+  if((err = getaddrinfo(addr, "http", &hints, &aip)))
     DIE("getaddrinfo(): %s\n", gai_strerror(err));
 
   /* Copy the target sockaddr into our rteurn value. */
@@ -76,6 +75,7 @@ int send_trace_udp(int sock, struct sockaddr* targetp, int ttl)
   socklen_t addrlen = (opts.family == AF_INET6) ?
                       sizeof(struct sockaddr_in6) :
                       sizeof(struct sockaddr_in);
+  memset(buf, 0, sizeof(buf));
 
   /* Set ttl on outgoing packet. */
   err = setsockopt(sock, IPPROTO_IP, IP_TTL, &ttl, sizeof(int));
@@ -105,7 +105,7 @@ int recv_reply_icmp(int sock, struct sockaddr *ssp)
   FD_ZERO(&fds);
   FD_SET(sock, &fds);
   err = select(sock + 1, &fds, NULL, NULL, &timeout);
-  if(!err) return -1; /* select() timed out. */
+  if(!err) return 1; /* select() timed out. */
   else if(err < 0) return -1;
 
   /* If we've reached here, we got an ICMP response. */
@@ -129,13 +129,20 @@ int trace_gethop(trace_t *tracep, hop_t *hop, int ttl)
 
   /* Wait until timeout for a reply. */
   err = recv_reply_icmp(tracep->recv_sock, replyp); 
-  if(err) DIE("recv_reply_icmp: %s\n", strerror(err));
+  if(err > 0) return -1; /* Reply timed out. */
+  else if(err < 0) DIE("recv_reply_icmp: %s\n", strerror(err));
 
   /* Extract address from replier sockaddr. */
   if(opts.family == AF_INET6)
+  {
     addrp = &(((struct sockaddr_in6*)replyp)->sin6_addr);
-  else
+    if(!memcmp(addrp, tracep->addrp, sizeof(struct in6_addr)))
+      hop->is_last_hop = 1;
+  } else {
     addrp = &(((struct sockaddr_in*)replyp)->sin_addr);
+    if(!memcmp(addrp, tracep->addrp, sizeof(struct in_addr)))
+      hop->is_last_hop = 1;
+  }
 
   /* Fill hop with the source address of the reply. */
   if(!inet_ntop(opts.family, addrp, hop->addr, sizeof(hop->addr)))

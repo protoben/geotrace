@@ -103,20 +103,23 @@ int main(int argc, char **argv)
 {
   db_t *dbp = NULL;
   ipdata_t *ip = NULL;
-  hop_t hop;
+  hop_t hop = {.is_last_hop = 0};
   char *host;
   trace_t *tracep;
+  int i;
   
   host = argparse(argc, argv);
   dbp = ipdata_dbinit();
 
   tracep = trace_init(host);
-  if(!trace_gethop(tracep, &hop, 1))
-  {
-    ip = ipdata_lookup(hop.addr, dbp);
-    ipdata_print_pretty(ip);
-    ipdata_free(ip);
-  }
+  for(i = 1; i <= 30 && !hop.is_last_hop; ++i)
+    if(!trace_gethop(tracep, &hop, i))
+    {
+      ip = ipdata_lookup(hop.addr, dbp);
+      printf("%d: ", i);
+      ipdata_print_pretty(ip);
+      ipdata_free(ip);
+    } else printf("%d: *", i);
 
   trace_free(tracep);
   ipdata_dbfree(dbp);

@@ -79,6 +79,8 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
   if(!inaddr) return NULL;
 
   ip = MALLOC(sizeof(ipdata_t), "ipdata_lookup()");
+  ip->latitude = 0.0;
+  ip->longitude = 0.0;
 
   /* Query the city database, if we have it. */
   if(dbp->citygp)
@@ -118,7 +120,7 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
   ip->asnum = MALLOC(strlen(asnum) + 1, "ipdata_lookup()");
   strcpy(ip->asnum, asnum);
 
-  free(asnum);
+  if(strcmp(asnum, empty)) free(asnum);
   if(grp) GeoIPRecord_delete(grp);
   return ip;
 }
