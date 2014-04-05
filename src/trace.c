@@ -27,7 +27,7 @@ int init_target_sock(char *addr, struct sockaddr_storage *ssp)
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = opts.family;
   hints.ai_flags = AI_ADDRCONFIG;
-  snprintf(port, sizeof(port), "%d", opts.port);
+  snprintf(port, sizeof(port), "%d", opts.dport);
   if((err = getaddrinfo(addr, port, &hints, &aip)))
     DIE("getaddrinfo(): %s\n", gai_strerror(err));
 

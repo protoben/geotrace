@@ -46,7 +46,7 @@ struct _opts_st
   char *asdb;       /* name of asnum database */
   int family;       /* address family (AF_INET, AFINET6) */
   int proto;        /* protocol for probes (tcp, udp, icmp) */
-  in_port_t port;   /* static prot to probe for tcp / udp */
+  in_port_t dport;   /* static prot to probe for tcp / udp */
   int burst;        /* number of probes to send at a time */
   int first;        /* first hop to probe */
   int max;          /* maximum hop count */

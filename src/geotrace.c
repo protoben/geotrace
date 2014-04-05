@@ -81,7 +81,7 @@ char *argparse(int argc, char **argv)
       case 'f': opts.first = atoi(optarg); break;
       case 'm': opts.max = atoi(optarg); break;
       case 'n': opts.flags |= NORESOLV; break;
-      case 'p': opts.proto = atoi(optarg); break;
+      case 'p': opts.dport = atoi(optarg); break;
       case 't':
         t = strtol(optarg, NULL, 10);
         if(opts.to.tv_sec < 10)
