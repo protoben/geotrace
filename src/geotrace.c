@@ -59,8 +59,10 @@ char *argparse(int argc, char **argv)
 
   /* Defaults */
   opts.proto = IPPROTO_UDP;
-  opts.burst = 5;
+  opts.burst = 1;
   opts.to.tv_sec = 1;
+  opts.first = 1;
+  opts.max = 30;
 
   while((opt = getopt(argc, argv, OPTS)) != -1)
   {
@@ -117,7 +119,7 @@ int main(int argc, char **argv)
     if(!trace_gethop(tracep, &hop, i))
     {
       ip = ipdata_lookup(hop.addr, dbp);
-      printf("%d: ", i);
+      printf("%d (%.3f): ", i, hop.rtt);
       ipdata_print_pretty(ip);
       ipdata_free(ip);
     } else printf("%d: *\n", i);

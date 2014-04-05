@@ -170,13 +170,23 @@ int recv_reply_icmp(int sock, struct sockaddr *ssp)
   FD_SET(sock, &fds);
   err = select(sock + 1, &fds, NULL, NULL, &timeout);
   if(!err) return 1; /* select() timed out. */
-  else if(err < 0) return -1;
+  else if(err < 0) return errno;
 
   /* If we've reached here, we got an ICMP response. */
   err = recvfrom(sock, buf, sizeof(buf), 0, replyp, &addrlen);
-  if(err < 0) return -1;
+  if(err < 0) return errno;
 
   return 0;
+}
+
+double diff_time(struct timeval *startp, struct timeval *endp)
+{
+  double ret;
+  
+  ret = endp->tv_sec - startp->tv_sec;
+  ret += (double)(endp->tv_usec - startp->tv_usec) / 1000;
+
+  return ret;
 }
 
 int trace_gethop(trace_t *tracep, hop_t *hop, int ttl)
@@ -186,15 +196,18 @@ int trace_gethop(trace_t *tracep, hop_t *hop, int ttl)
   struct sockaddr_storage reply;
   struct sockaddr *replyp = (struct sockaddr*)&reply,
                   *targetp = (struct sockaddr*)&tracep->target_ss;
+  struct timeval sendtime, recvtime;
 
   /* Send the trace for this ttl. */
   err = send_trace_udp(tracep->send_sock, targetp, ttl);
   if(err) DIE("send_trace_udp(): %s\n", strerror(err));
+  gettimeofday(&sendtime, NULL);
 
   /* Wait until timeout for a reply. */
   err = recv_reply_icmp(tracep->recv_sock, replyp); 
-  if(err > 0) return -1; /* Reply timed out. */
+  if(err > 0) return 1; /* Reply timed out. */
   else if(err < 0) DIE("recv_reply_icmp: %s\n", strerror(err));
+  gettimeofday(&recvtime, NULL);
 
   /* Extract address from replier sockaddr. */
   if(opts.family == AF_INET6)
@@ -211,6 +224,9 @@ int trace_gethop(trace_t *tracep, hop_t *hop, int ttl)
   /* Fill hop with the source address of the reply. */
   if(!inet_ntop(opts.family, addrp, hop->addr, sizeof(hop->addr)))
     DIE("inet_ntop(): %s\n", strerror(errno));
+
+  /* Calculate reply time. */
+  hop->rtt = diff_time(&sendtime, &recvtime);
 
   return 0;
 }
