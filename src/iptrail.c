@@ -11,7 +11,6 @@
  *
  */
 
-#include "geoip.h"
 #include "iptrail.h"
 
 struct _opts_st opts;
@@ -25,7 +24,7 @@ char *getaddrtype(char *target)
   memset(&hints, 0, sizeof(struct addrinfo));
   int err;
 
-  /* Make sure we don't resolve if NORESOLV is set. */
+  /* Make sure we don't ns resolve if NORESOLV is set. */
   if(opts.flags & NORESOLV) hints.ai_flags |= AI_NUMERICHOST;
 
   /* Prefill hints to specify address family if necessary. */
@@ -104,17 +103,22 @@ int main(int argc, char **argv)
 {
   db_t *dbp = NULL;
   ipdata_t *ip = NULL;
+  hop_t hop;
   char *host;
+  trace_t *tracep;
   
   host = argparse(argc, argv);
-  
   dbp = ipdata_dbinit();
 
-  ip = ipdata_lookup(host, dbp);
+  tracep = trace_init(host);
+  if(!trace_gethop(tracep, &hop, 1))
+  {
+    ip = ipdata_lookup(hop.addr, dbp);
+    ipdata_print_pretty(ip);
+    ipdata_free(ip);
+  }
 
-  ipdata_print_pretty(ip);
-
-  ipdata_free(ip);
+  trace_free(tracep);
   ipdata_dbfree(dbp);
   return EXIT_SUCCESS;
 }

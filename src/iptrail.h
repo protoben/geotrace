@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "geoip.h"
+#include "trace.h"
 
 #ifndef DEBUG
 # define NDEBUG
@@ -39,7 +41,7 @@ struct _opts_st
   unsigned flags;
   char *citydb;
   char *asdb;
-  sa_family_t family;
+  int family;
 };
 extern struct _opts_st opts;
 

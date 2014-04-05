@@ -2,7 +2,7 @@ NAME=iptrail
 CC=gcc
 CCFLAGS=-g -Wall -lGeoIP -DDEBUG
 
-OBJS=iptrail.o geoip.o
+OBJS=iptrail.o geoip.o trace.o
 SRC=src
 
 all: ${OBJS}
@@ -13,6 +13,9 @@ iptrail.o: ${SRC}/iptrail.[ch]
 
 geoip.o: ${SRC}/geoip.[ch]
 	${CC} -c ${CCFLAGS} ${SRC}/geoip.c
+
+trace.o: ${SRC}/trace.[ch]
+	${CC} -c ${CCFLAGS} ${SRC}/trace.c
 
 clean:
 	rm -f ${OBJS} ${NAME}
