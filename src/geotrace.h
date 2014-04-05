@@ -1,5 +1,5 @@
 /*
- * iptrail.h
+ * geotrace.h
  *
  * [description]
  *                       __        __             
@@ -11,8 +11,8 @@
  *
  */
 
-#ifndef _IPTRAIL_H
-#define _IPTRAIL_H
+#ifndef _GEOTRACE_H
+#define _GEOTRACE_H
 
 #include <errno.h>
 #include <getopt.h>
@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "geoip.h"
+#include "ipdata.h"
 #include "trace.h"
 
 #ifndef DEBUG
@@ -49,7 +49,7 @@ extern struct _opts_st opts;
 #define USAGE "%s %s\nUsage: %s -%s\n\t-h) Print this message.\n", NAME, VERS, NAME, OPTS
 #define DIE(...) do{fprintf(stderr, __VA_ARGS__); exit(EXIT_FAILURE);}while(0)
 
-static inline void *MALLOC(size_t s, const char *loc)
+static inline void *MALLOCORDIE(size_t s, const char *loc)
 {
   void *p;
 

@@ -1,5 +1,5 @@
 /*
- * iptrail.c
+ * geotrace.c
  *
  * [description]
  *                       __        __             
@@ -11,7 +11,7 @@
  *
  */
 
-#include "iptrail.h"
+#include "geotrace.h"
 
 struct _opts_st opts;
 

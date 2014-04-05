@@ -1,5 +1,5 @@
 /*
- * geoip.c
+ * ipdata.c
  *
  * [description]
  *                       __        __             
@@ -11,12 +11,12 @@
  *
  */
 
-#include "geoip.h"
-#include "iptrail.h"
+#include "ipdata.h"
+#include "geotrace.h"
 
 db_t *ipdata_dbinit()
 {
-  db_t *dbp = malloc(sizeof(db_t));
+  db_t *dbp = MALLOCORDIE(sizeof(db_t), "ipdata_dbinit()");
 
   if(opts.flags & NOAS) /* AS db not requested. */
     dbp->asgp = NULL;
@@ -78,7 +78,7 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
 
   if(!inaddr) return NULL;
 
-  ip = MALLOC(sizeof(ipdata_t), "ipdata_lookup()");
+  ip = MALLOCORDIE(sizeof(ipdata_t), "ipdata_lookup()");
   ip->latitude = 0.0;
   ip->longitude = 0.0;
 

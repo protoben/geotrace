@@ -1,5 +1,5 @@
 /*
- * geoip.h
+ * ipdata.h
  *
  * [description]
  *                       __        __             
@@ -11,8 +11,8 @@
  *
  */
 
-#ifndef _IPT_GEOIP_H
-#define _IPT_GEOIP_H
+#ifndef _IPDATA_H
+#define _IPDATA_H
 
 #include <GeoIP.h>
 #include <GeoIPCity.h>
