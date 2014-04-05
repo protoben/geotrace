@@ -19,9 +19,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/capability.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include "iptrail.h"
+
+#include "geotrace.h"
 
 typedef struct _hop_st
 {

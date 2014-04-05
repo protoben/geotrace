@@ -32,23 +32,64 @@ int init_target_sock(char *addr, struct sockaddr_storage *ssp)
   return 0;
 }
 
+int trace_get_cap(int cap)
+{
+  return 0;
+}
+
+/*
+ * Get a socket 
+ */
+int trace_get_socks(int *sendp, int *recvp, int proto)
+{
+  int socktype;
+
+  /* Determine the appropriate socktype for sending protocol. */
+  switch(proto)
+  {
+    case IPPROTO_UDP:
+      socktype = SOCK_DGRAM;
+      break;
+    case IPPROTO_TCP:
+    case IPPROTO_ICMP:
+      socktype = SOCK_RAW;
+      break;
+    default:
+      DIE("trace_get_socks(): Protocol %d unsupported\n", proto);
+  }
+
+  /* Get a socket for sending probes. */
+  *sendp = socket(opts.family, socktype, proto);
+  if(*sendp < 0) return errno;
+
+  /* Get an icmp socket for recving probe responses. */
+  *recvp = socket(opts.family, SOCK_RAW, IPPROTO_ICMP);
+  if(*recvp < 0) return errno;
+
+  return 0;
+}
+
+/*
+ * Return a trace_t with the info necessary to send probes.
+ */
 trace_t *trace_init(char *addr)
 {
-  int send_sock, recv_sock;
+  int send_sock, recv_sock, err;
   trace_t *ret;
   struct sockaddr_in *sinp;
   struct sockaddr_in6 *sin6p;
+  cap_t cap;
 
-  /* Get a udp socket for sending probes. */
-  send_sock = socket(opts.family, SOCK_DGRAM, IPPROTO_UDP);
-  if(send_sock < 0) DIE("socket(UDP): %s\n", strerror(errno));
+  /* Attempt to get raw socket capabilities (for icmp). */
+  err = trace_get_cap(CAP_NET_RAW);
+  if(cap) DIE("trace_get_cap(): %s\n", strerror(err));
 
-  /* Get an icmp socket for recving probe responses. */
-  recv_sock = socket(opts.family, SOCK_RAW, IPPROTO_ICMP);
-  if(recv_sock < 0) DIE("socket(ICMP): %s\n", strerror(errno));
+  /* Attempt to acquire sending and recving socks. */
+  err = trace_get_socks(&recv_sock, &send_sock, IPPROTO_UDP);
+  if(err) DIE("trace_get_socks(): socket(): %s\n", strerror(err));
 
   /* Create a trace_t to return and copy in our socks. */
-  ret = malloc(sizeof(trace_t));
+  ret = MALLOCORDIE(sizeof(trace_t), "trace_init()");
   ret->send_sock = send_sock;
   ret->recv_sock = recv_sock;
 

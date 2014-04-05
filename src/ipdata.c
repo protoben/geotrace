@@ -109,15 +109,15 @@ ipdata_t *ipdata_lookup(const char *inaddr, db_t *dbp)
   }
 
   /* Copy data into ipdata_t for great thread safety. */
-  ip->address = MALLOC(strlen(inaddr) + 1, "ipdata_lookup()");
+  ip->address = MALLOCORDIE(strlen(inaddr) + 1, "ipdata_lookup()");
   strcpy(ip->address, inaddr);
-  ip->city = MALLOC(strlen(city) + 1, "ipdata_lookup()");
+  ip->city = MALLOCORDIE(strlen(city) + 1, "ipdata_lookup()");
   strcpy(ip->city, city);
-  ip->region = MALLOC(strlen(region) + 1, "ipdata_lookup()");
+  ip->region = MALLOCORDIE(strlen(region) + 1, "ipdata_lookup()");
   strcpy(ip->region, region);
-  ip->country = MALLOC(strlen(country) + 1, "ipdata_lookup()");
+  ip->country = MALLOCORDIE(strlen(country) + 1, "ipdata_lookup()");
   strcpy(ip->country, country);
-  ip->asnum = MALLOC(strlen(asnum) + 1, "ipdata_lookup()");
+  ip->asnum = MALLOCORDIE(strlen(asnum) + 1, "ipdata_lookup()");
   strcpy(ip->asnum, asnum);
 
   if(strcmp(asnum, empty)) free(asnum);
