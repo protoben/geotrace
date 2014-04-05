@@ -53,46 +53,47 @@ char *getaddrtype(char *target)
 char *argparse(int argc, char **argv)
 {
   char opt;
+  long t;
 
   if(argc < 2) DIE(USAGE);
+
+  /* Defaults */
+  opts.proto = IPPROTO_UDP;
+  opts.burst = 5;
+  opts.to.tv_sec = 1;
 
   while((opt = getopt(argc, argv, OPTS)) != -1)
   {
     switch(opt)
     {
-      case 'n':
-        opts.flags |= NORESOLV;
-        break;
-      case '4':
-        if(opts.family == AF_INET6)
-          DIE("argparse(): Only one of -4/-6 may be specified");
-        opts.family = AF_INET;
-        break;
-      case '6':
-        if(opts.family == AF_INET)
-          DIE("argparse(): Only one of -4/-6 may be specified");
-        opts.family = AF_INET6;
-        break;
-      case 'A':
-        opts.flags |= NOAS;
-        break;
-      case 'C':
-        opts.flags |= NOCITY;
-        break;
-      case 'a':
-        if(opts.flags & NOAS)
-          DIE("argparse(): Only one of -a and -A may be specified\n");
-        opts.asdb = optarg;
-        break;
-      case 'c':
-        if(opts.flags & NOCITY)
-          DIE("argparse(): Only one of -c and -C may be specified\n");
-        opts.citydb = optarg;
-        break;
+      case '4': opts.family = AF_INET; break;
+      case '6': opts.family = AF_INET6; break;
+      case 'A': opts.flags |= NOAS; break;
+      case 'C': opts.flags |= NOCITY; break;
+      case 'I': opts.proto = IPPROTO_ICMP; break;
+      case 'T': opts.proto = IPPROTO_TCP; break;
+      case 'U': opts.proto = IPPROTO_UDP; break;
+      case 'a': opts.asdb = optarg; break;
+      case 'b': opts.burst = atoi(optarg); break;
+      case 'c': opts.citydb = optarg; break;
+      case 'f': opts.first = atoi(optarg); break;
+      case 'm': opts.max = atoi(optarg); break;
+      case 'n': opts.flags |= NORESOLV; break;
+      case 'p': opts.proto = atoi(optarg); break;
+      case 't':
+        t = strtol(optarg, NULL, 10);
+        if(opts.to.tv_sec < 10)
+        {
+          opts.to.tv_sec = t;
+          opts.to.tv_usec = 0;
+        } else {
+          opts.to.tv_sec = 0;
+          opts.to.tv_usec = t;
+        }
       case 'h':
       default:
-        DIE(USAGE);
-        break;
+         DIE(USAGE);
+         break;
     }
   }
 
@@ -112,14 +113,14 @@ int main(int argc, char **argv)
   dbp = ipdata_dbinit();
 
   tracep = trace_init(host);
-  for(i = 1; i <= 30 && !hop.is_last_hop; ++i)
+  for(i = opts.first; i <= opts.max && !hop.is_last_hop; ++i)
     if(!trace_gethop(tracep, &hop, i))
     {
       ip = ipdata_lookup(hop.addr, dbp);
       printf("%d: ", i);
       ipdata_print_pretty(ip);
       ipdata_free(ip);
-    } else printf("%d: *", i);
+    } else printf("%d: *\n", i);
 
   trace_free(tracep);
   ipdata_dbfree(dbp);

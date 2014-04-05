@@ -32,15 +32,38 @@ int init_target_sock(char *addr, struct sockaddr_storage *ssp)
   return 0;
 }
 
-int trace_get_cap(int cap)
+/*
+ * Attempt to get the specified libcap(3) capability. Return
+ * error code on failure.
+ */
+int trace_get_cap(cap_value_t cap)
 {
+  int err;
+  cap_t cap_p;
+  cap_flag_value_t cflag = CAP_CLEAR;
+
+  /* Initialize a cap with current values for our process. */
+  cap_p = cap_get_proc();
+  if(!cap_p) return errno;
+
+  /* Make sure we're permitted to obtain this capability. */
+  cap_get_flag(cap_p, cap, CAP_PERMITTED, &cflag);
+  if(cflag == CAP_CLEAR) return EACCES;
+
+  /* Set the cap and attempt to apply it to our process. */
+  cap_set_flag(cap_p, CAP_EFFECTIVE, 1, &cap, CAP_SET);
+  err = cap_set_proc(cap_p);
+  if(err) return errno;
+
+  cap_free(cap_p);
   return 0;
 }
 
 /*
- * Get a socket 
+ * Get a socket of type proto for sending probes and an icmp
+ * socket for recving responses. return error code on failure.
  */
-int trace_get_socks(int *sendp, int *recvp, int proto)
+int trace_get_socks(int *recvp, int *sendp, int proto)
 {
   int socktype;
 
@@ -78,11 +101,10 @@ trace_t *trace_init(char *addr)
   trace_t *ret;
   struct sockaddr_in *sinp;
   struct sockaddr_in6 *sin6p;
-  cap_t cap;
 
   /* Attempt to get raw socket capabilities (for icmp). */
   err = trace_get_cap(CAP_NET_RAW);
-  if(cap) DIE("trace_get_cap(): %s\n", strerror(err));
+  if(err) DIE("trace_get_cap(): %s\n", strerror(err));
 
   /* Attempt to acquire sending and recving socks. */
   err = trace_get_socks(&recv_sock, &send_sock, IPPROTO_UDP);
@@ -111,7 +133,7 @@ trace_t *trace_init(char *addr)
 
 int send_trace_udp(int sock, struct sockaddr* targetp, int ttl)
 {
-  int err;
+  int err, i;
   char buf[40];
   socklen_t addrlen = (opts.family == AF_INET6) ?
                       sizeof(struct sockaddr_in6) :
@@ -123,10 +145,11 @@ int send_trace_udp(int sock, struct sockaddr* targetp, int ttl)
   if(err) return errno;
 
   /* Deploy the probe. */
-  do{
+  for(i = 0; i < opts.burst; ++i)
+  {
     err = sendto(sock, buf, sizeof(buf), 0, targetp, addrlen);
-    if(err < 0) return errno;
-  }while(err != sizeof(buf));
+    if(err != sizeof(buf)) return errno;
+  }
 
   return 0;
 }
