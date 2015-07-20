@@ -73,6 +73,7 @@ char *argparse(int argc, char **argv)
       case 'A': opts.flags |= NOAS; break;
       case 'C': opts.flags |= NOCITY; break;
       case 'I': opts.proto = IPPROTO_ICMP; break;
+      case 'P': opts.flags |= PRETTY; break;
       case 'T': opts.proto = IPPROTO_TCP; break;
       case 'U': opts.proto = IPPROTO_UDP; break;
       case 'a': opts.asdb = optarg; break;
@@ -120,7 +121,8 @@ int main(int argc, char **argv)
     {
       ip = ipdata_lookup(hop.addr, dbp);
       printf("%d (%.3f): ", i, hop.rtt);
-      ipdata_print_pretty(ip);
+      if(opts.flags & PRETTY) ipdata_print_pretty(ip);
+      else ipdata_print_long(ip);
       ipdata_free(ip);
     } else printf("%d: *\n", i);
 

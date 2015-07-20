@@ -39,6 +39,7 @@
 #define NOAS       0x02
 #define NOCITY     0x04
 #define STATICPORT 0x08
+#define PRETTY     0x10
 struct _opts_st
 {
   unsigned flags;
@@ -54,7 +55,7 @@ struct _opts_st
 };
 extern struct _opts_st opts;
 
-#define OPTS "n46ACa:c:b:p:TUIh"
+#define OPTS "n46ACPa:c:b:p:TUIh"
 #define USAGE "%s %s\nUsage: %s [-n46ACTUIh] [-a dbpath]\n" \
               "\t\t\t[-c dbpath] [-b num] [-p port]\n"      \
               "\t\t\t[-m hop] [-f hop]\n"                   \
@@ -63,6 +64,7 @@ extern struct _opts_st opts;
               "\t-A) Don't look up AS info.\n"              \
               "\t-C) Don't look up city info.\n"            \
               "\t-I) Send ICMP (echo request) probes.\n"    \
+              "\t-P) Print in pretty, multi-line form.\n"   \
               "\t-T) Send TCP (half-open) probes.\n"        \
               "\t-U) Send UDP probes.\n"                    \
               "\t-a) Specify an asnum database to use.\n"   \

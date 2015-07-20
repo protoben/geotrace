@@ -92,7 +92,7 @@ int trace_get_socks(int *recvp, int *sendp, int proto)
   if(*sendp < 0) return errno;
 
   /* Get an icmp socket for recving probe responses. */
-  *recvp = socket(opts.family, SOCK_RAW, IPPROTO_ICMP);
+  *recvp = socket(opts.family, SOCK_DGRAM, 0);
   if(*recvp < 0) return errno;
 
   return 0;

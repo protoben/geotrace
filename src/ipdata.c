@@ -146,13 +146,13 @@ void ipdata_print_long(ipdata_t *ip)
 
   /* Print city info. */
   if(!(opts.flags & NOCITY))
-    printf("\t|\t%s, %s, %s (%f, %f)",
+    printf(" | %s, %s, %s (%f, %f)",
            ip->city, ip->region, ip->country,
            ip->latitude, ip->longitude);
 
   /* Print as info. */
   if(!(opts.flags & NOAS))
-    printf("\t|\t%s", ip->asnum);
+    printf(" | %s", ip->asnum);
 
   puts("");
 }
